@@ -1,0 +1,101 @@
+[debug] [2022-04-17T09:36:26.378Z] ----------------------------------------------------------------------
+[debug] [2022-04-17T09:36:26.379Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\rehop\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js emulators:start --only functions
+[debug] [2022-04-17T09:36:26.379Z] CLI Version:   10.6.0
+[debug] [2022-04-17T09:36:26.380Z] Platform:      win32
+[debug] [2022-04-17T09:36:26.380Z] Node Version:  v16.13.0
+[debug] [2022-04-17T09:36:26.380Z] Time:          Sun Apr 17 2022 18:36:26 GMT+0900 (日本標準時)
+[debug] [2022-04-17T09:36:26.380Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2022-04-17T09:36:26.421Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2022-04-17T09:36:26.421Z] > authorizing via signed-in user (kemujidesign@gmail.com)
+[info] i  emulators: Starting emulators: functions {"metadata":{"emulator":{"name":"hub"},"message":"Starting emulators: functions"}}
+[debug] [2022-04-17T09:36:26.430Z] [hub] writing locator at C:\Users\rehop\AppData\Local\Temp\hub-chakra-note.json
+[warn] !  functions: The following emulators are not running, calls to these services from the Functions emulator will affect production: auth, firestore, database, hosting, pubsub, storage {"metadata":{"emulator":{"name":"functions"},"message":"The following emulators are not running, calls to these services from the Functions emulator will affect production: \u001b[1mauth, firestore, database, hosting, pubsub, storage\u001b[22m"}}
+[info] +  functions: Using node@16 from host. {"metadata":{"emulator":{"name":"functions"},"message":"Using node@16 from host."}}
+[debug] [2022-04-17T09:36:26.439Z] defaultcredentials: writing to file C:\Users\rehop\AppData\Roaming\firebase\kemujidesign_gmail_com_application_default_credentials.json
+[debug] [2022-04-17T09:36:26.439Z] Setting GAC to C:\Users\rehop\AppData\Roaming\firebase\kemujidesign_gmail_com_application_default_credentials.json {"metadata":{"emulator":{"name":"functions"},"message":"Setting GAC to C:\\Users\\rehop\\AppData\\Roaming\\firebase\\kemujidesign_gmail_com_application_default_credentials.json"}}
+[debug] [2022-04-17T09:36:26.441Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/chakra-note/adminSdkConfig [none]
+[debug] [2022-04-17T09:36:26.749Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/chakra-note/adminSdkConfig 200
+[debug] [2022-04-17T09:36:26.749Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/chakra-note/adminSdkConfig {"projectId":"chakra-note","storageBucket":"chakra-note.appspot.com","locationId":"asia-northeast1"}
+[debug] [2022-04-17T09:36:26.757Z] Ignoring unsupported arg: auto_download {"metadata":{"emulator":{"name":"ui"},"message":"Ignoring unsupported arg: auto_download"}}
+[debug] [2022-04-17T09:36:26.757Z] Ignoring unsupported arg: port {"metadata":{"emulator":{"name":"ui"},"message":"Ignoring unsupported arg: port"}}
+[debug] [2022-04-17T09:36:26.757Z] Starting Emulator UI with command {"binary":"node","args":["C:\\Users\\rehop\\.cache\\firebase\\emulators\\ui-v1.6.5\\server.bundle.js"],"optionalArgs":[],"joinArgs":false} {"metadata":{"emulator":{"name":"ui"},"message":"Starting Emulator UI with command {\"binary\":\"node\",\"args\":[\"C:\\\\Users\\\\rehop\\\\.cache\\\\firebase\\\\emulators\\\\ui-v1.6.5\\\\server.bundle.js\"],\"optionalArgs\":[],\"joinArgs\":false}"}}
+[info] i  ui: Emulator UI logging to ui-debug.log {"metadata":{"emulator":{"name":"ui"},"message":"Emulator UI logging to \u001b[1mui-debug.log\u001b[22m"}}
+[debug] [2022-04-17T09:36:26.831Z] Web / API server started at localhost:4000
+ {"metadata":{"emulator":{"name":"ui"},"message":"Web / API server started at localhost:4000\n"}}
+[info] i  functions: Watching "C:\Users\rehop\vscode_ws\rehop\react\cw014\chakra-note\functions" for Cloud Functions... {"metadata":{"emulator":{"name":"functions"},"message":"Watching \"C:\\Users\\rehop\\vscode_ws\\rehop\\react\\cw014\\chakra-note\\functions\" for Cloud Functions..."}}
+[debug] [2022-04-17T09:36:27.018Z] Validating nodejs source
+[debug] [2022-04-17T09:36:29.028Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "build": "tsc",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "16"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "firebase-admin": "^10.0.2",
+    "firebase-functions": "^3.18.0",
+    "stripe": "^8.217.0"
+  },
+  "devDependencies": {
+    "firebase-functions-test": "^0.2.0",
+    "typescript": "^4.5.4"
+  },
+  "private": true
+}
+[debug] [2022-04-17T09:36:29.028Z] Building nodejs source
+[debug] [2022-04-17T09:36:29.028Z] Analyzing nodejs backend spec
+[info] +  functions[us-central1-helloWorld]: http function initialized (http://localhost:5001/chakra-note/us-central1/helloWorld). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://localhost:5001/chakra-note/us-central1/helloWorld)."}}
+[info] i  functions[us-central1-createStripeCharge]: function ignored because the firestore emulator does not exist or is not running. {"metadata":{"emulator":{"name":"functions"},"message":"function ignored because the firestore emulator does not exist or is not running."}}
+[info] 
+┌─────────────────────────────────────────────────────────────┐
+│ ✔  All emulators ready! It is now safe to connect your app. │
+│ i  View Emulator UI at http://localhost:4000                │
+└─────────────────────────────────────────────────────────────┘
+
+┌───────────┬────────────────┬─────────────────────────────────┐
+│ Emulator  │ Host:Port      │ View in Emulator UI             │
+├───────────┼────────────────┼─────────────────────────────────┤
+│ Functions │ localhost:5001 │ http://localhost:4000/functions │
+└───────────┴────────────────┴─────────────────────────────────┘
+  Emulator Hub running at localhost:4400
+  Other reserved ports: 4500
+
+Issues? Report them at https://github.com/firebase/firebase-tools/issues and attach the *-debug.log files.
+ 
+[debug] [2022-04-17T10:36:02.526Z] File C:\Users\rehop\vscode_ws\rehop\react\cw014\chakra-note\functions\src\index.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File C:\\Users\\rehop\\vscode_ws\\rehop\\react\\cw014\\chakra-note\\functions\\src\\index.ts changed, reloading triggers"}}
+[debug] [2022-04-17T10:36:03.527Z] Validating nodejs source
+[debug] [2022-04-17T10:36:05.572Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "build": "tsc",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "16"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "firebase-admin": "^10.0.2",
+    "firebase-functions": "^3.18.0",
+    "stripe": "^8.217.0"
+  },
+  "devDependencies": {
+    "firebase-functions-test": "^0.2.0",
+    "typescript": "^4.5.4"
+  },
+  "private": true
+}
+[debug] [2022-04-17T10:36:05.572Z] Building nodejs source
+[debug] [2022-04-17T10:36:05.572Z] Analyzing nodejs backend spec

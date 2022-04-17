@@ -1,0 +1,58 @@
+.l-header {
+  background-color: white;
+  color: #000000;
+  border-bottom: solid 0.5px #000000;
+  position: fixed;
+  width:100%;
+
+
+  button {
+    border-width: 0px;
+    border-radius: 4px;
+
+    // @media only screen and (max-width: 560px) { 
+    //   background-color: whitesmoke;
+    //   width:50%;
+    // }
+
+    &:hover { 
+      background-color: #1AA190;
+      cursor: pointer;
+      border-width: 0px;
+
+    }
+    
+  }
+
+  button-signout {
+    background-color: lightgray;
+    color: #2CB696;
+    border-width: 0px;
+    border-radius: 4px;
+
+    &:hover { 
+      background-color: antiquewhite;
+      cursor: pointer;
+      border-width: 0px;
+
+    }
+    
+  }
+
+  .avatar:hover {
+    cursor: pointer;
+  }
+
+  .username {
+    font-size: 1rem;
+  }
+  
+  .apptitle {
+    font-size: 1.5rem;
+    @media only screen and (max-width: 400px) { 
+      font-size: 1.25rem;
+    }   
+  }
+
+}
+
