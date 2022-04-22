@@ -50,14 +50,23 @@ const Payment = () => {
 
 //     console.log(client_secret);
 
-// /functions/helloWorld
-const response = await fetch(`/api/hello`, {
-      method: "GET",
-    }).then(res => res.json());
+console.log('fetch');
 
+//const response = await fetch(`/api/test`, {
+  // const response = await fetch(`/about/ss`, {
+  //     method: "GET",
+  //   }).then(res => res.json());
 
-    console.log(response);
+  //   console.log(response);
 
+//  await fetch('https://jsonplaceholder.typicode.com/posts', {method: 'GET'})
+  await fetch('/api/checkout')
+    .then(res => {res.json()})
+    .then(data => {
+      console.log(data);
+    }).catch(error => {
+      console.error('通信に失敗しました', error);
+    })
 
 }
 
