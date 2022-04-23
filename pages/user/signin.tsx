@@ -160,6 +160,13 @@ const Singnin = () => {
           <Text mt="200px">ログイン</Text>
 
           <Box h='60px'>
+            <Button colorScheme='facebook' onClick={signInWithFacebook} /*leftIcon={<FaFacebook /> }*/>
+              Facebook
+            </Button>
+          </Box>
+
+
+          <Box h='60px'>
             <Text>メールアドレス</Text>
             <Input placeholder='' size='md' 
                 name="email" onChange={handleChange} />

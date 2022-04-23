@@ -28,7 +28,7 @@ export const createCheckoutSession = functions.https.onRequest(async (req, res) 
             mode: 'payment',
             line_items,
             customer_email,
-            success_url: `${domainUrl}/success?sesion_id={CHECKOUT_SESSSIO_ID}`,
+            success_url: `${domainUrl}/payment-checkout?sesion_id={CHECKOUT_SESSSIO_ID}`,
             cancel_url: `${domainUrl}/canceled`
         });
         res.status(200).json({ sessionId: session.id });

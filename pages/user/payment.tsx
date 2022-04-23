@@ -17,6 +17,7 @@ import { signInWithEmailAndPassword  } from 'firebase/auth';
 import { UserContext } from '../../store/contexts/user.context';
 
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { resolve } from 'node:path/win32';
 
 
 
@@ -33,40 +34,24 @@ const Payment = () => {
       return;
     }
 
-    console.log(JSON.stringify( { amount:1000 } ));
-    // console.log(JSON.parse(JSON.stringify( { amount:1000 } )));
 
-//firebase emulators:start --only functions
+  console.log('fetch');
 
-// const response = await fetch('functions/helloWorld', {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json"
-//       },
-//       body: '{ amount :2000 }'
-//     }).then(res => res.json());
 
-//     const { paymentIntent: { client_secret } } = response;
+  const response = await fetch('/api/checkout');
+  //const response = await fetch('/api/hello');
 
-//     console.log(client_secret);
+  const res = await response.json();
+  const sessionId = res.sessionId;
+  console.log('sessionId=>', sessionId);
 
-console.log('fetch');
-
-//const response = await fetch(`/api/test`, {
-  // const response = await fetch(`/about/ss`, {
-  //     method: "GET",
-  //   }).then(res => res.json());
-
-  //   console.log(response);
-
-//  await fetch('https://jsonplaceholder.typicode.com/posts', {method: 'GET'})
-  await fetch('/api/checkout')
-    .then(res => {res.json()})
-    .then(data => {
-      console.log(data);
-    }).catch(error => {
-      console.error('通信に失敗しました', error);
+    const { error } = await stripe.redirectToCheckout({
+      sessionId
     })
+  
+    if(error){ 
+      console.log(error);
+    }
 
 }
 
@@ -75,7 +60,7 @@ console.log('fetch');
     <div>
       <form >ss
         <Text mt="100px">STRIPE</Text>
-        <CardElement/>
+        
         <Button onClick={paymentHandler}>Pay Now</Button>
 
       </form>
