@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { UserContext } from '../store/contexts/user.context';
 
 import { useRouter } from 'next/router';
@@ -15,17 +15,26 @@ const Header = () => {
 
   const storedUser = useContext(UserContext);
 
-  //現在ユーザー取得
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      const uid = user.uid;
+  //ユーザー情報取得
+  useEffect(() =>{
+    
+    //現在ユーザー取得
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const uid = user.uid;
 
-    } else {
-      console.log('onAuthStateChanged:','User is signed out');
+      } else {
+        console.log('onAuthStateChanged:','User is signed out');
 
-    }
+      }
 
-  });
+      console.log('header user=',user);
+      console.log('header currentUser=',storedUser.currentUser);
+
+    });
+
+  },[]);
+
 
   const router = useRouter();
 
@@ -72,7 +81,10 @@ const Header = () => {
         <Stack direction='row'>
           { (storedUser.currentUser != null) && (
               <>
-              <Avatar className={styles['avatar']} name='Oshigaki Kisame' src='https://bit.ly/broken-link' onClick={handleAvatar} />
+
+              {/* //'https://bit.ly/broken-link' */}
+              <Avatar className={styles['avatar']} name='Oshigaki Kisame' 
+                src={ storedUser.currentUser['profImageUrl'] } onClick={handleAvatar} />
               <Box p="3" id="loginUserName" className={styles['username']} >
                 { storedUser.currentUser && storedUser.currentUser['displayName']}
               </Box> 

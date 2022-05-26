@@ -81,7 +81,6 @@ export default function EditForm() {
 
       if (articleSnap.exists()) {
         const data = articleSnap.data();
-
         setImageUrl(data.url);
         setTitleVal(data.title);
         setContentVal(data.content);

@@ -224,7 +224,7 @@ export default function EditForm() {
     // @ts-ignore
     const content = contentRef.current.value;
 
-    if(title == null || content == null　){
+    if(title == null || content == null ){
       alert('タイトルと内容を設定してください');
       return;
     }

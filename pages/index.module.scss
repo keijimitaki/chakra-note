@@ -7,21 +7,63 @@
 .search {
   padding-top: 120px;
   display: flex;
+  margin: 0 6rem;
 
   & button {
     margin: 0 2rem;
-    color:aliceblue;
-    background-color: cadetblue;
+    width: 8rem;
+    color: inherit;
+    background-color: white;
   }
+
+  @media only screen and (max-width: 560px) { 
+    margin: 0 2rem;
+  } 
 
 }
 
 .search-detail {
   padding-top: 20px;
+  margin: 0 6rem;
   padding-bottom: 260px;
   display: flex;
+  flex-direction: column;
+  & .d1{
+    display: flex;
+    flex-direction: row;
+    .left {
+      flex-basis: auto;
+      flex-grow: 1;
+      padding-right: 1.25rem;
+    
+    }
+    .right {
+      flex-basis: 160px; 
+    }    
+
+    @media only screen and (max-width: 560px) { 
+      .right {
+        flex-basis: 120px;
+      }    
+    }
+
+
+  }
+
+  & .d1header {
+    margin: 0;
+    padding: 0;
+  }
+  & .articleheader {
+    padding: 1rem 0;
+  }
+  
+  @media only screen and (max-width: 560px) { 
+    margin: 0 2rem;
+  } 
 
 }
+
 
 
 .grid {

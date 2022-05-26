@@ -17,7 +17,8 @@ export default async function handler(
 ) {
 
   const response = await fetch(`http://localhost:5001/chakra-note/us-central1/createCheckoutSession`, {
-    method: 'POST', 
+  //const response = await fetch(`https://us-central1-chakra-note.cloudfunctions.net/createCheckoutSession`, {
+      method: 'POST', 
     headers: {
        "Content-Type": "application/json"
     },

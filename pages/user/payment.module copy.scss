@@ -1,0 +1,33 @@
+.button {
+    color: #20b2aa;
+  }
+  
+  .button:hover {
+    color: #2e8b57;
+  }
+
+  .grid {
+    padding: 0 21rem;
+    // margin: 0 4rem;
+    display: grid;
+    grid-gap: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(560px, 1fr));
+  
+    @media only screen and (max-width: 1800px) { 
+      padding: 0 6rem;
+    } 
+    @media only screen and (max-width: 1400px) { 
+      padding: 0 3rem;
+    } 
+    @media only screen and (max-width: 1200px) { 
+      padding: 0.2rem;
+      // margin: 0.25rem;
+    } 
+  
+    @media only screen and (max-width: 560px) { 
+      padding: 0.1rem;
+      // margin: 0.1rem;
+    } 
+  
+  }
+  

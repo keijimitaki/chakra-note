@@ -11,7 +11,7 @@ import '../utils/firebase' // Initialize FirebaseApp
 const ImageUpLoad = (props:any) => {
 
   console.log('props:',props.defaultValue);
-  let imageUrlDefault = props.defaultValue;
+  // let imageUrlDefault = props.defaultValue;
 
   const [image, setImage] = useState("");
   const [imageUrl, setImageUrl] = useState(props.defaultValue);
@@ -21,7 +21,6 @@ const ImageUpLoad = (props:any) => {
 
 
   const [error, setError] = useState("");
-  const [progress, setProgress] = useState(100);
 
 
   console.log('imageUrl:',imageUrl);
@@ -59,7 +58,15 @@ const ImageUpLoad = (props:any) => {
     // @ts-ignore
     console.log(image.name);
     // @ts-ignore
-    const imageRef  = ref(storage, `/images/${image.name}`);
+    let refLocation = `/images/`;
+    
+    if(props.profFlag){
+      refLocation = `/prof_images/`;
+    }
+// @ts-ignore
+    let imageRefLocation = refLocation + `${image.name}`;
+
+    const imageRef  = ref(storage, imageRefLocation);
     console.log(imageRef.name);
     console.log("uploadBytes",imageRef);
     // @ts-ignore

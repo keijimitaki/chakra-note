@@ -86,11 +86,12 @@ export default function Articles() {
       // @ts-ignore
       querySnapshot.forEach((doc) => {
         // doc.data() is never undefined for query doc snapshots
-        //console.log(doc.id, " => ", doc.data());
+        console.log(doc.id, " => ", doc.data());
         articleIds.push(doc.data().article_id);
       });
   
     }
+
 
     console.log(articleIds);
     let articlesQuery = null;
@@ -105,62 +106,86 @@ export default function Articles() {
         ,orderBy('created_at', 'desc'));
     }    
 
-    const articlesSnapshot = await getDocs(articlesQuery);
-    let rows = new Array();
-    for await(let doc of articlesSnapshot.docs) {
 
-      let row = {};
-      // @ts-ignore
-      row.id = doc.id;
-      // @ts-ignore
-      row.title = doc.data().title;
-      // @ts-ignore
-      row.content = doc.data().content;
-      // @ts-ignore
-      row.orgUrl = doc.data().url;
-      // @ts-ignore
-      row.favCount = doc.data().fav_count;
-      // @ts-ignore
-      row.author = doc.data().author_name; 
-      
-      const tq = query(collection(db, "tags"), where("article_id", "==", doc.id) );
-      const tagSnapshot = await getDocs(tq);
-      // @ts-ignore
-      let tagNames = [] ; 
-      tagSnapshot.forEach((tag) => {
-        //console.log(tag.id, " => ", tag.data());
-        tagNames.push({
-          id:tag.id,
-          tagName: tag.data().tag_name});
-      });
-      // @ts-ignore
-      row.tags = tagNames;
+    getDocs(articlesQuery).then( (articlesSnapshot) => {
       
 
+      let rows = new Array();
+      articlesSnapshot.docs.forEach(
+        (doc) => {
 
-      //keywordが設定されていたら、文字列が一致するもののみ
-      if(keywordRef.current!.value != ""){
-      //  if(false){
+          let row = {};
+          // @ts-ignore
+          row.id = doc.id;
+          // @ts-ignore
+          row.title = doc.data().title;
+          // @ts-ignore
+          row.content = doc.data().content;
+          // @ts-ignore
+          row.orgUrl = doc.data().url;
+          // @ts-ignore
+          row.favCount = doc.data().fav_count;
 
-        //@ts-ignore
-        const checkStr = row.content;
-        console.log(checkStr);
+          const tq = query(collection(db, "tags"), where("article_id", "==", doc.id) );
+          // getDocs(tq).then( (tagSnapshot ) => {
+          //   // @ts-ignore
+          //   let tagNames = [] ; 
+          //   tagSnapshot.forEach((tag) => {
+          //     console.log(tag.id, " => ", tag.data());
+          //     tagNames.push({
+          //       id:tag.id,
+          //       tagName: tag.data().tag_name});
+          //   });
+          //   // @ts-ignore
+          //   row.tags = tagNames;
 
-        if( checkStr != null && (checkStr.indexOf(keywordRef.current!.value)>=0)){
-          rows.push(row);
-          console.log('一致');
+          // });
 
-        }
-      } else {
-        rows.push(row);
+          async() => {
+            const tagSnapshot = await getDocs(tq);
+            // @ts-ignore
+            let tagNames = [] ; 
+            tagSnapshot.forEach((tag) => {
+              console.log(tag.id, " => ", tag.data());
+              tagNames.push({
+                id:tag.id,
+                tagName: tag.data().tag_name});
+            });
+            // @ts-ignore
+            row.tags = tagNames;
 
-      }
-
-    };
+          }
 
 
-    // @ts-ignore
-    setArticles(rows);
+// @ts-ignore
+          //row.tags = [{'id':'1','tagName':'aaa名前'},{'id':'2','tagName':'bbb名前'}];
+
+          //keywordが設定されていたら、文字列が一致するもののみ
+          if(keywordRef.current!.value != ""){
+          //  if(false){
+
+            //@ts-ignore
+            const checkStr = row.content;
+console.log(checkStr);
+
+            if( checkStr != null && (checkStr.indexOf(keywordRef.current!.value)>=0)){
+              rows.push(row);
+              console.log('一致');
+
+            }
+          } else {
+            rows.push(row);
+
+          }
+
+        });
+
+      // @ts-ignore
+      setArticles(rows);
+
+      
+    })
+
     console.log('articles=',articles);
 
     setFinishLoading(true);
@@ -234,7 +259,6 @@ export default function Articles() {
             <Article 
               key={row.id} 
               id={row.id} 
-              author={row.author} 
               title={row.title} 
               content={row.content} 
               orgUrl={row.orgUrl}

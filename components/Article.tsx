@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Box, Center, Image, Flex, Text, Button, AspectRatio } from "@chakra-ui/react";
+import { Box, Center, Image, Flex, Text, Button, AspectRatio, Badge } from "@chakra-ui/react";
 import { FavIconBorder } from "./custom-icon/FavIcon";
 import NextLink from "next/link"
 import styles from './Article.module.scss';
@@ -9,14 +9,18 @@ import Fav from './Fav';
 type Props = {
   key: string,
   id: string,
-  title: string,
+  title: string|null,
+  author: string,
   content: string,
   orgUrl: string,
   favCount: number,
   favedUid: string|null,
+  tags: [],
 }
 
 const Article = (props: Props) => {
+
+  console.log("props=>",props);
 
   return (
     <div>
@@ -29,7 +33,7 @@ const Article = (props: Props) => {
             className={styles['eyecatch']}/>
           </NextLink>
         </AspectRatio>
-          <Flex align="baseline" mt={2}>
+          {/* <Flex align="baseline" mt={2}>
             <Text  paddingLeft={21} 
               ml={2}
               textTransform="uppercase"
@@ -39,17 +43,25 @@ const Article = (props: Props) => {
             >
               {props.title}
             </Text>
-          </Flex>
+          </Flex> */}
           <Text mt={2} paddingLeft={21} fontSize="xl" fontWeight="semibold" lineHeight="short">
-          {props.content}
+            {props.content}
           </Text>
-          <Flex mt={2} paddingLeft={21} align="center">
+          <Flex mt={2} paddingLeft={4} align="center">
             {/* <Box as={FavIconBorder} />
             <Text ml={1} fontSize="sm" align="center">
               <b>0</b>
             </Text> */}
             <Fav articleId={props.id} favCount={props.favCount} favedUid={props.favedUid} />
+            <Box className={styles['author']}>{props.author}</Box>
+          </Flex>
 
+          <Flex mb={2} paddingLeft={2} align="center">
+            <Box minW="660px;">
+              {(props.tags) && (props.tags.length>0) && props.tags.map((row: any) => (
+                <Badge key={row.id} ml='3'>{row.tagName}</Badge>
+              ))}
+            </Box>
           </Flex>
 
         </Box>

@@ -24,7 +24,7 @@ const Fav = (props: Props) => {
   //初期値取得
   useEffect(() =>{
 
-    console.log('Fav=>',props);
+    //console.log('Fav=>',props);
 
     setFavCount(props.favCount);
     
@@ -39,7 +39,7 @@ const Fav = (props: Props) => {
       const q = query(collection(db, "favs"), where("article_id", "==", props.articleId), where("faved_uid", "==", props.favedUid) );
       const favSnapshot = await getDocs(q);
       
-      console.log('favSnapshot.size=',favSnapshot.size);
+      //console.log('favSnapshot.size=',favSnapshot.size);
       setFaved(false);
       if (favSnapshot.size > 0) {
         
@@ -57,7 +57,7 @@ const Fav = (props: Props) => {
 
   },[props]);
 
-  console.log('faved=>',faved);
+  //console.log('faved=>',faved);
 
   const clickHandler = (favToggle:boolean) => {
 
@@ -120,13 +120,13 @@ const Fav = (props: Props) => {
   }
 
   return (
-    <div>
+    <div className={styles['fav']}>
       {/* {favDocId} */}
         { (faved) 
-          ? <Box as={FavIconFavorite} className={styles['fav']} onClick={(e)=>clickHandler(false)} />
-          : <Box as={FavIconBorder} className={styles['fav']} onClick={(e)=>clickHandler(true)} />
+          ? <Box as={FavIconFavorite} className={styles['box']} onClick={(e)=>clickHandler(false)} />
+          : <Box as={FavIconBorder} className={styles['box']} onClick={(e)=>clickHandler(true)} />
         }
-        <Box>{favCount}</Box>
+        <Box className={styles['box']}> {favCount}</Box>
     </div>
   );
 }
