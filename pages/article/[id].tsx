@@ -15,7 +15,7 @@ import { useRouter } from 'next/router';
 
 import ReactTagInput from "@pathofdev/react-tag-input";
 import "@pathofdev/react-tag-input/build/index.css";
-import { Image, Grid, GridItem, Input, Stack, Textarea, Text, Button, RadioGroup, Radio, useDisclosure, AlertDialog, AlertDialogOverlay, AlertDialogContent, AlertDialogHeader, AlertDialogCloseButton, AlertDialogBody, AlertDialogFooter, AspectRatio, Box, Badge } from '@chakra-ui/react';
+import { Image, Grid, GridItem, Input, Center, Stack, Textarea, Text, Button, RadioGroup, Radio, useDisclosure, AlertDialog, AlertDialogOverlay, AlertDialogContent, AlertDialogHeader, AlertDialogCloseButton, AlertDialogBody, AlertDialogFooter, AspectRatio, Box, Badge } from '@chakra-ui/react';
 
 import { UserContext } from '../../store/contexts/user.context';
 
@@ -313,37 +313,36 @@ export default function EditForm() {
               <Button onClick={()=>moveEditHandler(articleId)}>編集</Button>
             }
 
-            <Text>タイトル</Text>
-            {titleVal} 
-            <Input placeholder='' size='sm' 
-               id="title" ref={titleRef} defaultValue={titleVal} 
-               className={styles['title-input']} />
+            <Text><b>{titleVal}</b></Text>
+             
+            <Textarea
+              placeholder='Here is a sample placeholder'
+              size='sm'
+              id="content"
+              aria-label="minimum height"
+              style={{ width: 720, height:200 }}
+              ref={contentRef} 
+              isReadOnly={true}
+              variant='unstyled'
+              defaultValue={contentVal}
+            />
 
 
-              <Text>本文</Text>
-              {contentVal}
-                  <Textarea
-                    placeholder='Here is a sample placeholder'
-                    size='sm'
-                    id="content"
-                    aria-label="minimum height"
-                    style={{ width: 500 }}
-                    ref={contentRef} 
-                    defaultValue={contentVal}
-                  />
+            <Textarea
+              placeholder='Here is a sample placeholder'
+              size='sm'
+              id="comment"
+              aria-label="minimum height"
+              style={{ width: 720 }}
+              ref={commentRef} 
+            />
 
+          
 
-            <Text>コメント</Text>
-                  <Textarea
-                    placeholder='Here is a sample placeholder'
-                    size='sm'
-                    id="comment"
-                    aria-label="minimum height"
-                    style={{ width: 500 }}
-                    ref={commentRef} 
-                  />
+          <Center h='100px' >
+            <Button onClick={handleSave}>コメント投稿</Button>
+          </Center>
 
-          <Button onClick={handleSave}>コメント投稿</Button>
 
               <div>
 

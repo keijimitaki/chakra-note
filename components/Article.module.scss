@@ -1,12 +1,19 @@
+.article{
+  position: relative;
+  // border: 1px solid saddlebrown;
+}
 
 .eyecatch {
-
   &:hover {
     cursor: pointer;
   }
-
 }
 
+.premiumLabel {
+  z-index:100;
+  position: absolute;
+  right: 1.75rem;
+}
 
 .author{
   margin: auto 8px;

@@ -1,8 +1,7 @@
 .page {
-  display: flex;
-  flex-direction: column;
+   display: flex;
+   flex-direction: column;
 }
-
 
 .search {
   padding-top: 120px;
@@ -66,12 +65,13 @@
 
 
 
+
 .grid {
   padding: 0 21rem;
   // margin: 0 4rem;
   display: grid;
   grid-gap: 2rem;
-  grid-template-columns: repeat(auto-fit, minmax(560px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(580px, 1fr));
 
   @media only screen and (max-width: 1800px) { 
     padding: 0 6rem;
@@ -115,3 +115,5 @@
 //     grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
 //   }
 // }
+
+

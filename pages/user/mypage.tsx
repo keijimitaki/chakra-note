@@ -173,6 +173,10 @@ const handlerPayment = () => {
                 row.orgUrl = doc.data().url;
                 // @ts-ignore
                 row.favCount = doc.data().fav_count;
+                // @ts-ignore
+                row.author = doc.data().author_name;
+                // @ts-ignore
+                row.plemiumFlag = doc.data().plemium_flag;
       
                 const tq = query(collection(db, "tags"), where("article_id", "==", doc.id) );
                 const tagSnapshot = await getDocs(tq);
@@ -353,7 +357,7 @@ const handlerPayment = () => {
 
 
   return (
-    <div>
+    <>
 
       <form onSubmit={submitHander}>
         
@@ -391,30 +395,35 @@ const handlerPayment = () => {
             
           </Box>
           <Box h='200px'> <hr/></Box>
-          <div className={styles['grid']}>
 
-            {(articles.length>0) && articles.map((row: any) => (
-
-              <Article 
-                key={row.id} 
-                id={'../../article/edit/' + row.id} 
-                title={row.title} 
-                content={row.content} 
-                orgUrl={row.orgUrl} 
-                favCount={row.favCount}
-                favedUid={myUid}
-                tags={row.tags}
-                />
-
-            ))}
-
-          </div>
 
         </Stack>
 
       </form>
 
-    </div>
+      <div className={styles['grid']}>
+
+        {(articles.length>0) && articles.map((row: any) => (
+
+          <Article 
+            key={row.id} 
+            id={'../../article/edit/' + row.id} 
+            author={row.author} 
+            title={row.title} 
+            content={row.content} 
+            orgUrl={row.orgUrl} 
+            favCount={row.favCount}
+            favedUid={myUid}
+            tags={row.tags}
+            premiumFlag={row.premiumFlag}
+            />
+
+        ))}
+
+      </div>
+
+    </>
+
   );
 };
 

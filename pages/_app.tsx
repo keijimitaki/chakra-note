@@ -5,6 +5,9 @@ import { UserProvider } from '../store/contexts/user.context';
 
 import { Elements } from '@stripe/react-stripe-js';
 import { stripePromise } from '../utils/stripe';
+import { extendTheme } from '@chakra-ui/react'
+
+// 2. Update the breakpoints as key-value pairs
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
