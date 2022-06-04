@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef, useContext } from 'react';
-import { Input, Button, Select, Spinner } from '@chakra-ui/react'
-import { collection, getDocs, getFirestore, doc, setDoc, query, where, orderBy  } from 'firebase/firestore'
+import React, { useState, useEffect, useRef, useContext, useCallback } from 'react';
+import { Input, Button, Select, Spinner, Center } from '@chakra-ui/react'
+import { collection, getDocs, getFirestore, doc, setDoc, query, where, orderBy, limit, startAfter } from 'firebase/firestore'
 
 import '../utils/firebase' 
 import styles from './index.module.scss';
@@ -16,6 +16,8 @@ import { UserContext } from '../store/contexts/user.context';
 import { onAuthStateChanged, createUserWithEmailAndPassword } from 'firebase/auth';
 import {
   auth} from '../utils/firebase';
+
+import ScrollObserver from "../components/ScrollObserver";
 
 export default function Articles() {
 
@@ -39,6 +41,29 @@ export default function Articles() {
   //ローディング状態
   const [finishLoading, setFinishLoading] =useState(false);
 
+  const [todos, setTodos] = useState([]);
+
+  const [isActiveObserver, setIsActiveObserver] = useState(true)
+  const [lastDoc, setLastDoc] = useState();
+
+
+  const fetchNextTodos = useCallback(async () => {
+    const res = await fetch(
+      `https://jsonplaceholder.typicode.com/todos?_start=${todos.length}&_limit=10`
+    );
+    const json = await res.json();
+    // データをすべて取得したとき
+    if (json.length === 0) {
+      return setIsActiveObserver(false);
+    }
+    //@ts-ignore
+    setTodos([...todos, ...json]);
+  }, [todos]);    
+
+
+  const fetchNextArticles = useCallback(async () => {
+    search();
+  }, [articles]);
 
   //初回データ取得
   useEffect(() => {
@@ -51,6 +76,8 @@ export default function Articles() {
         //@ts-ignore
         setMyUid(uid);
       }
+      //@ts-ignore
+      setLastDoc(null);
 
       console.log('search authUser.uid',myUid);
       search();
@@ -91,16 +118,50 @@ export default function Articles() {
     let articlesQuery = null;
     if(articleIds.length>0){
 
-      articlesQuery = query(collection(db, "articles")
+      if(lastDoc) {
+        articlesQuery = query(collection(db, "articles")
         ,where('article_id','in', articleIds)
-        ,orderBy('created_at', 'desc'));
+        ,orderBy('created_at', 'desc')
+        ,startAfter(lastDoc)
+        ,limit(2));
+
+      } else {
+        articlesQuery = query(collection(db, "articles")
+        ,where('article_id','in', articleIds)
+        ,orderBy('created_at', 'desc')
+        ,limit(2));
+
+      }
     
     } else {
-      articlesQuery = query(collection(db, "articles")
-        ,orderBy('created_at', 'desc'));
+
+      if(lastDoc) {
+        articlesQuery = query(collection(db, "articles")
+        ,orderBy('created_at', 'desc')
+        ,startAfter(lastDoc)
+        ,limit(2));
+        
+      } else {
+        articlesQuery = query(collection(db, "articles")
+        ,orderBy('created_at', 'desc')
+        ,limit(2));
+
+      }
     }    
 
     const articlesSnapshot = await getDocs(articlesQuery);
+
+    if(articlesSnapshot.docs.length <= 0){
+      //@ts-ignore
+      setLastDoc(null);
+      return; 
+    }
+
+    const lastVisible = articlesSnapshot.docs[articlesSnapshot.docs.length-1];
+    console.log("lastVisible", lastVisible);
+    //@ts-ignore
+    setLastDoc(lastVisible);
+
     let rows = new Array();
     for await(let doc of articlesSnapshot.docs) {
 
@@ -142,8 +203,7 @@ export default function Articles() {
 
     };
 
-
-    setArticles(rows);
+    setArticles([...articles, ...rows]);
     console.log('articles=',articles);
 
     setFinishLoading(true);
@@ -158,6 +218,12 @@ export default function Articles() {
     //@ts-ignore
     console.log(orderRef.current.value);
     search();
+
+    //@ts-ignore
+    setLastDoc(null);
+    //@ts-ignore
+    setArticles([]);
+
   }
 
   return (
@@ -166,7 +232,6 @@ export default function Articles() {
 
 
       <div className={styles['page']}>
-      
       
         <div className={styles['search']}>
           <Input ref={keywordRef} placeholder='' id="seachKeyword" borderColor="blackAlpha" ></Input>
@@ -226,10 +291,14 @@ export default function Articles() {
 
         </div>
 
+        <ScrollObserver
+            onIntersect={fetchNextArticles}
+            isActiveObserver={isActiveObserver}
+          />
+          
         
       </div>
 
-          
 
     </>
 

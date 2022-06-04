@@ -284,7 +284,6 @@ export default function EditForm() {
         
         <GridItem w='100%' h='50' bg='blue.500' />
         <GridItem w='100%' h='10' bg='blue.500' />
-
         <GridItem w='100%' h='10' bg='blue.500' >
 
           <Stack spacing={3} mt="150px">
@@ -298,13 +297,9 @@ export default function EditForm() {
             <Box><Fav articleId={articleId} favCount={favCount} favedUid={myUid} /></Box>
           </Stack>
 
-
             <div>
-
               <AspectRatio minW='720px' maxW='720px' maxH='330px' ratio={4 / 3}>
-              
                 <Image borderRadius="md" src={ imageUrl! } objectFit='cover'/>
-              
               </AspectRatio>
               
             </div>

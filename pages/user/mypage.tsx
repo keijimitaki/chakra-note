@@ -11,6 +11,10 @@ import { collection, getDoc, getDocs, getFirestore,
 import styles from './mypage.module.scss';
 import User from '../../models/User'
 
+import { UserModel } from '../../models/UserModel';
+import { ArticleModel } from '../../models/ArticleModel';
+import { TagModel } from '../../models/TagModel';
+
 // import Button from '../../components/crwn/button.component';
 // import FormInput from '../../components/crwn/form-input.component';
 
@@ -25,14 +29,15 @@ import {
   createUserDocumentFromAuth,
   createAuthUserWithEmailAndPassword,
 } from '../../utils/firebase';
-import { Box, Button, Text, Container, FormControl, FormLabel, Grid, Input, Stack, StackDivider, VStack, RadioGroup, Radio } from '@chakra-ui/react';
-import { onAuthStateChanged, createUserWithEmailAndPassword } from 'firebase/auth';
+import { Box, Button, Text, useToast, Container, FormControl, FormLabel, Grid, Input, Stack, StackDivider, VStack, RadioGroup, Radio, Center } from '@chakra-ui/react';
+import { onAuthStateChanged, updatePassword } from 'firebase/auth';
 
 import { UserContext } from '../../store/contexts/user.context';
 import Article from '../../components/Article';
 import ImageUpLoad from '../../components/ImageUpLoad';
 
 import { useRouter } from 'next/router';
+import { ssrEntries } from 'next/dist/build/webpack/plugins/middleware-plugin';
 const defaultFormFields = {
   displayName: '',
   password: '',
@@ -40,7 +45,7 @@ const defaultFormFields = {
 
 
 const Mypage = () => {
-
+  const toast = useToast();
   const [formFields, setFormFields] = useState(defaultFormFields);
   const { displayName, password } = formFields;
   
@@ -52,6 +57,8 @@ const Mypage = () => {
 
   const [image, setImage] = useState(null);
   const [imageUrl ,setImageUrl] = useState(null);
+  const [articles, setArticles] = useState<ArticleModel[]>([]);
+
 
   const resetFormFields = () => {
     setFormFields(defaultFormFields);
@@ -109,15 +116,12 @@ const handlerPayment = () => {
     
     console.log('useEffect=>');
 
-    //const f = async() => {
-
       //現在ユーザーはこれを実施した後にしか取得できない
       onAuthStateChanged(auth, (authUser) => {
 
 
         if (authUser) {
           const uid = authUser.uid;
-          //@ts-ignore
           setMyUid(uid);
 
           // console.log('doc:',data);
@@ -131,24 +135,32 @@ const handlerPayment = () => {
               //@ts-ignore
             setEmailVal(authUser.email);
 
+            let curretUser:UserModel = {
+              uid: uid,
+              email: authUser.email,
+              displayName: displayName,
+              profImageUrl: null,
+              createdAt: null,
+            };
+
             if (userSnap.exists()) {
               const data = userSnap.data();
               
-              const user:User = new User(uid, authUser.email, data.display_name, data.prof_image_url, data.created_at);
+              curretUser.displayName = data.display_name;
+              curretUser.profImageUrl = data.prof_image_url;
+              curretUser.createdAt = data.created_at;
 
               console.log('userSnap:',data);
-              //@ts-ignore
               setUserName(data.display_name);
-              //@ts-ignore
               setImageUrl(data.prof_image_url);
-              //@ts-ignore
-              storedUser.setCurrentUser(user);
 
             } else {
               // doc.data() will be undefined in this case
               console.log("No such userSnap");
             }
 
+              //@ts-ignore
+              storedUser.setCurrentUser(curretUser);
 
             const storage = getStorage();
             const articlesQuery = query(collection(db, "articles"),where('author_uid', '==' ,uid), orderBy('created_at', 'desc'));
@@ -158,66 +170,39 @@ const handlerPayment = () => {
 
             let rows = new Array();
             for await(let doc of articlesSnapshot.docs) {
-            //articlesSnapshot.docs.forEach(
-              // (doc) => {
-      
-                console.log(doc.id,doc);
-                let row = {};
-                // @ts-ignore
-                row.id = doc.id;
-                // @ts-ignore
-                row.title = doc.data().title;
-                // @ts-ignore
-                row.content = doc.data().content;
-                // @ts-ignore
-                row.orgUrl = doc.data().url;
-                // @ts-ignore
-                row.favCount = doc.data().fav_count;
-                // @ts-ignore
-                row.author = doc.data().author_name;
-                // @ts-ignore
-                row.plemiumFlag = doc.data().plemium_flag;
       
                 const tq = query(collection(db, "tags"), where("article_id", "==", doc.id) );
                 const tagSnapshot = await getDocs(tq);
-                // @ts-ignore
-                let tagNames = [] ; 
+
+                let tagNames:TagModel[] = []; 
                 tagSnapshot.forEach((tag) => {
                   console.log(tag.id, " => ", tag.data());
                   tagNames.push({
                     id:tag.id,
                     tagName: tag.data().tag_name});
                 });
-                // @ts-ignore
-                row.tags = tagNames;
 
-
-                //   // @ts-ignore
-                // getDownloadURL(ref(storage, `images/${doc.id}`))
-                // .then((url) => {
-      
-                // }).catch((error) => {
-                // });
+                let row: ArticleModel = {
+                  id: doc.id,
+                  title: doc.data().title,
+                  content: doc.data().content,
+                  orgUrl: doc.data().url,
+                  favCount: doc.data().fav_count,
+                  author: doc.data().author_name, 
+                  premiumFlag: doc.data().premium_flag, 
+                  tags: tagNames
+                }
       
                 rows.push(row);
             
-            
             };
             
-
-              //});
-      
-            // @ts-ignore
             setArticles(rows);
-            console.log('articles=',articles);
           
           };
           
           f();
             
-
-
-
 
         } else {
           // User is signed out
@@ -227,9 +212,6 @@ const handlerPayment = () => {
 
       });
  
-    //};
-
-    //f();
     
 
   },[]);
@@ -238,6 +220,10 @@ const handlerPayment = () => {
   const submitHander = async (e:any)=> {
     e.preventDefault();
 
+    //パスワードが変更できない
+    //プロフィール画像が初期化されないように。プロフィール画像を削除できる機能
+    //ユーザー削除
+
     const db = getFirestore();
     // const docRef = doc()
 
@@ -245,27 +231,33 @@ const handlerPayment = () => {
       onAuthStateChanged(auth, (authUser) => {
         if (authUser) {
           const uid = authUser.uid;
-     
-          // console.log('doc:',data);
+
           (async ()=> {
+
+            let currentUser:UserModel = {
+              uid: uid,
+              email: authUser.email,
+              displayName: displayName,
+              profImageUrl: null,
+              createdAt: null,
+            };
 
             const db = getFirestore();
             const userRef = doc(db, 'users', uid);
             
             const userSnap = await getDoc(userRef);
-            console.log('userSnap:',userSnap);
-
-          // ファイルが指定されていたら
-          if(image){
-            const storage = getStorage();
-           // @ts-ignore
-           const imageRef = ref(storage, `/prof_images/${uid}`);
-           // @ts-ignore
-           uploadBytes(imageRef , image)
+            let currentProfUrl = null;
+            // ファイルが指定されていたら
+            if(image){
+              const storage = getStorage();
+              // @ts-ignore
+              const imageRef = ref(storage, `/prof_images/${uid}`);
+              // @ts-ignore
+              uploadBytes(imageRef , image)
                .then((snapshot) => {
                  console.log("アップロードに成功しました");
-               // Get the download URL
-               getDownloadURL(imageRef)
+                // Get the download URL
+                getDownloadURL(imageRef)
                  .then((url) => {
                    // URLを設定
                    const updateTimestamp = updateDoc(userRef, {
@@ -274,7 +266,13 @@ const handlerPayment = () => {
                     display_name: displayName,
                     updated_at: serverTimestamp()
                  });
-    
+                 
+                  setImage(image);
+                  currentUser.profImageUrl = url;
+                  currentUser.displayName = displayName;
+                  //@ts-ignore
+                  storedUser.setCurrentUser(currentUser);
+
                  })
                  .catch((error) => {
                    switch (error.code) {
@@ -296,49 +294,58 @@ const handlerPayment = () => {
        
        
                })
-       
                .catch((error) => {
                  console.log("アップロードに失敗しました");
                });
 
             } else {
 
-  
+              const data = userSnap.data();
+              // @ts-ignore
+              currentProfUrl = data.prof_image_url;
               //ユーザー情報更新
               const updateTimestamp = await updateDoc(userRef, {
                 // @ts-ignore
                 display_name: displayName,
+                // @ts-ignore
+                prof_image_url: data.prof_image_url,
                 updated_at: serverTimestamp()
              });
   
+             currentUser.profImageUrl = currentProfUrl;
+             currentUser.displayName = displayName;
+            //@ts-ignore
+            storedUser.setCurrentUser(currentUser);
 
-            }         
-
-
-            if (userSnap.exists()) {
-              const data = userSnap.data();
-              
-              console.log('userSnap:',data);
-              console.log(displayName);
-              setUserName(displayName);
-
-              const user = new User(uid, data.email, displayName, data.profImageUrl, data.createdAt);
-              setImageUrl(data.profImageUrl);
-
-              console.log('userSnap:',data);
-              console.log(data.displayName);
-              setUserName(data.displayName);
-              //@ts-ignore
-              storedUser.setCurrentUser(user);
-  
-            } else {
-              // doc.data() will be undefined in this case
-              console.log("No such userSnap");
             }
 
 
+            //パスワードが更新されていたら
+            const user = auth.currentUser;
+            console.log('currentUser=>',user);
+
+
+            if(password != "" && user != null){
+              updatePassword(user, password).then(() => {
+                // Update successful.
+              }).catch((error) => {
+                // エラー処理
+                // An error ocurred
+                // ...
+              });
+            }
+
           })();
 
+          
+          toast({
+            // title: 'メッセージ',
+            description: "更新しました",
+            status: 'success',
+            // duration: 9000,
+            // isClosable: true,
+          });
+      
         } else {
           // User is signed out
           console.log('onAuthStateChanged:','User is signed out');
@@ -351,9 +358,6 @@ const handlerPayment = () => {
   }
 
 
-  const [articles, setArticles] = useState([]);
-
-
 
 
   return (
@@ -361,6 +365,7 @@ const handlerPayment = () => {
 
       <form onSubmit={submitHander}>
         
+        <Center>
         <Stack
           spacing={8}
           align='stretch'
@@ -372,6 +377,11 @@ const handlerPayment = () => {
             <Text>ユーザー名</Text>
             <Input placeholder='' size='md' defaultValue={userName} 
                 name="displayName" onChange={handleChange} />
+          </Box>
+          <Box h='60px'>
+            <Text>パスワード</Text>
+            <Input placeholder='' size='md' defaultValue={password} 
+                name="password" onChange={handleChange} />
           </Box>
 
           <div>
@@ -398,7 +408,7 @@ const handlerPayment = () => {
 
 
         </Stack>
-
+        </Center>
       </form>
 
       <div className={styles['grid']}>

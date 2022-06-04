@@ -16,7 +16,7 @@ import ImageUpLoad from '../../../components/ImageUpLoad';
 
 import ReactTagInput from "@pathofdev/react-tag-input";
 import "@pathofdev/react-tag-input/build/index.css";
-import { Grid, GridItem, Input, Stack, Textarea, Text, Button, RadioGroup, Radio, useDisclosure, AlertDialog, AlertDialogOverlay, AlertDialogContent, AlertDialogHeader, AlertDialogCloseButton, AlertDialogBody, AlertDialogFooter } from '@chakra-ui/react';
+import { Grid, GridItem, useToast, Input, Stack, Textarea, Text, Button, RadioGroup, Radio, useDisclosure, AlertDialog, AlertDialogOverlay, AlertDialogContent, AlertDialogHeader, AlertDialogCloseButton, AlertDialogBody, AlertDialogFooter } from '@chakra-ui/react';
 
 import { UserContext } from '../../../store/contexts/user.context';
 
@@ -24,7 +24,8 @@ import User from '../../../models/User'
 
 
 export default function EditForm() {
-  
+
+  const toast = useToast();
   //ログインユーザー
   const storedUser = useContext(UserContext);
   const [myUid, setMyUid] = useState(null); 
@@ -211,7 +212,16 @@ export default function EditForm() {
         }
       )
     // router.replace('/');  
-    router.push('/', undefined, { shallow: true })
+    //router.push('/', undefined, { shallow: true })
+  
+    toast({
+      // title: 'メッセージ',
+      description: "登録しました",
+      status: 'success',
+      // duration: 9000,
+      // isClosable: true,
+    });
+
   }
 
   //保存
@@ -303,7 +313,8 @@ export default function EditForm() {
           .catch((error) => {
             console.log("アップロードに失敗しました");
           });
-            
+
+
     }
 
 
@@ -331,8 +342,16 @@ export default function EditForm() {
 
     
     // router.replace('/');  
-    router.push('/', undefined, { shallow: true })
-
+    //router.push('/', undefined, { shallow: true })
+    
+    toast({
+      // title: 'メッセージ',
+      description: "保存しました",
+      //status: 'success',
+      // duration: 9000,
+      // isClosable: true,
+    });
+          
 
   }
 

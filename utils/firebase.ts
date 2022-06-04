@@ -1,4 +1,6 @@
-import { initializeApp } from 'firebase/app'
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+
 import { 
   getAuth,
   signInWithRedirect,
@@ -18,13 +20,18 @@ import { getStorage, ref } from 'firebase/storage'
 import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
 
 initializeApp({
-  apiKey: "AIzaSyCdkRZRfGOW4dsSbmsgC2QKMcGd1uEHx4Q",
-  authDomain: "chakra-note.firebaseapp.com",
-  projectId: "chakra-note",
-  storageBucket: "chakra-note.appspot.com",
-  messagingSenderId: "600150538454",
-  appId: "1:600150538454:web:695a2382a72da6ec61b177"
+  apiKey: "AIzaSyCge1W0I3TnPQssVxr75Vzsh1fUmn8V35E",
+  authDomain: "chakura-note.firebaseapp.com",
+  projectId: "chakura-note",
+  storageBucket: "chakura-note.appspot.com",
+  messagingSenderId: "732062507807",
+  appId: "1:732062507807:web:2fba726f2cbee2783c062a"
 })
+
+// // Initialize Firebase
+// if (firebase.apps.length === 0) {
+//   firebase.initializeApp(firebaseConfig);
+// }
 
 const googleProvider = new GoogleAuthProvider();
   googleProvider.setCustomParameters({
@@ -33,30 +40,7 @@ const googleProvider = new GoogleAuthProvider();
 
 export const auth = getAuth();
 
-/*
-export const signInWithFacebookPopup = async() => {
-  const provider = new FacebookAuthProvider();
-  console.log('FB start',provider);
 
-  await signInWithPopup(auth, provider)
-  .then((result)=>{
-    const user = result.user;
-    console.log(result);
-
-    // This gives you a Facebook Access Token. You can use it to access the Facebook API.
-    const credential = FacebookAuthProvider.credentialFromResult(result);
-    // @ts-ignore
-    const accessToken = credential.accessToken;
-
-  })
-  .catch((err)=>{
-    console.log(err.message);
-  })
-
-  console.log('FB end');
-
-}
-*/
 
 const fbProvider = new FacebookAuthProvider();
 export const signInWithFacebookPopup = () =>  signInWithPopup(auth, fbProvider);

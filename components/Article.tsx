@@ -32,7 +32,8 @@ const Article = (props: Props) => {
             <Badge className={styles['premiumLabel']} colorScheme='red' ml='3'>有料会員限定</Badge>
           }
           
-          <AspectRatio maxW='560px' maxH='400px' ratio={4 / 3}>
+          {/* <AspectRatio maxW='560px' maxH='400px' ratio={4 / 3}> */}
+          <AspectRatio ratio={4 / 3}>
             <NextLink href={'article/' + props.id}>
               <Image borderRadius="md" src={props.orgUrl} objectFit='cover' 
               className={styles['eyecatch']}/>
@@ -40,7 +41,7 @@ const Article = (props: Props) => {
           </AspectRatio>
 
           <Text mt={2} paddingLeft={21} fontSize="xl" fontWeight="semibold" lineHeight="short">
-            {props.content}
+            {props.title} 
           </Text>
           <Flex mt={2} paddingLeft={4} align="center">
             <Fav articleId={props.id} favCount={props.favCount} favedUid={props.favedUid} />
