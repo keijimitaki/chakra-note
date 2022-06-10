@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useContext, useCallback } from 'react';
-import { Input, Button, Select, Spinner, Center } from '@chakra-ui/react'
+import { Input, Button, Select, Spinner, Center, Stack, Box } from '@chakra-ui/react'
 import { collection, getDocs, getFirestore, doc, setDoc, query, where, orderBy, limit, startAfter } from 'firebase/firestore'
 
 import '../utils/firebase' 
@@ -39,30 +39,32 @@ export default function Articles() {
   const orderRef = useRef(null);
   
   //ローディング状態
-  const [finishLoading, setFinishLoading] =useState(false);
+  const [finishLoading, setFinishLoading] = useState(true);
 
-  const [todos, setTodos] = useState([]);
+  // const [todos, setTodos] = useState([]);
 
   const [isActiveObserver, setIsActiveObserver] = useState(true)
   const [lastDoc, setLastDoc] = useState();
 
 
-  const fetchNextTodos = useCallback(async () => {
-    const res = await fetch(
-      `https://jsonplaceholder.typicode.com/todos?_start=${todos.length}&_limit=10`
-    );
-    const json = await res.json();
-    // データをすべて取得したとき
-    if (json.length === 0) {
-      return setIsActiveObserver(false);
-    }
-    //@ts-ignore
-    setTodos([...todos, ...json]);
-  }, [todos]);    
+  // const fetchNextTodos = useCallback(async () => {
+  //   const res = await fetch(
+  //     `https://jsonplaceholder.typicode.com/todos?_start=${todos.length}&_limit=10`
+  //   );
+  //   const json = await res.json();
+  //   // データをすべて取得したとき
+  //   if (json.length === 0) {
+  //     return setIsActiveObserver(false);
+  //   }
+  //   //@ts-ignore
+  //   setTodos([...todos, ...json]);
+  // }, [todos]);    
 
 
   const fetchNextArticles = useCallback(async () => {
+    setFinishLoading(false);
     search();
+    
   }, [articles]);
 
   //初回データ取得
@@ -83,8 +85,7 @@ export default function Articles() {
       search();
 
     }); 
-
-    
+   
 
   },[]);
 
@@ -92,9 +93,8 @@ export default function Articles() {
 
   const search = async() => {
 
-    setFinishLoading(false);
     const db = getFirestore();
-    
+
     //orderBy('created_at', 'desc')
 
     //タグが指定されていたら、
@@ -154,6 +154,8 @@ export default function Articles() {
     if(articlesSnapshot.docs.length <= 0){
       //@ts-ignore
       setLastDoc(null);
+      setFinishLoading(true);
+
       return; 
     }
 
@@ -186,20 +188,22 @@ export default function Articles() {
       }
 
       //keywordが設定されていたら、文字列が一致するもののみ
-      if(keywordRef.current!.value != ""){
+      // if(keywordRef.current!.value != ""){
 
-        const checkStr = row.content;
-        console.log(checkStr);
+      //   const checkStr = row.content;
+      //   console.log(checkStr);
 
-        if( checkStr != null && (checkStr.indexOf(keywordRef.current!.value)>=0)){
-          rows.push(row);
-          console.log('一致');
+      //   if( checkStr != null && (checkStr.indexOf(keywordRef.current!.value)>=0)){
+      //     rows.push(row);
+      //     console.log('一致');
 
-        }
-      } else {
-        rows.push(row);
+      //   }
+      // } else {
+      //   rows.push(row);
 
-      }
+      // }
+      
+      rows.push(row);
 
     };
 
@@ -229,8 +233,7 @@ export default function Articles() {
   return (
 
     <>
-
-
+ 
       <div className={styles['page']}>
       
         <div className={styles['search']}>
@@ -257,8 +260,8 @@ export default function Articles() {
             <div className={styles['right']} >
               <Select ref={orderRef} placeholder='' borderColor="blackAlpha" variant='outline'>
                 <option value='created_at_desc'>投稿日時順</option>
-                <option value='option2'>Option 2</option>
-                <option value='option3'>Option 3</option>
+                {/* <option value='option2'>Option 2</option>
+                <option value='option3'>Option 3</option> */}
               </Select>
             </div>
 
@@ -269,6 +272,17 @@ export default function Articles() {
 
         </div>
 
+        {!finishLoading && 
+          <span className={styles['spinner']}>
+          <Spinner
+            thickness='4px'
+            speed='0.65s'
+            emptyColor='gray.200'
+            color='blue.500'
+            size='xl'
+          />
+          </span>
+        }
 
         <div className={styles['grid']}>
 
@@ -291,15 +305,15 @@ export default function Articles() {
 
         </div>
 
-        <ScrollObserver
+
+        
+      </div>
+
+      <ScrollObserver
             onIntersect={fetchNextArticles}
             isActiveObserver={isActiveObserver}
           />
           
-        
-      </div>
-
-
     </>
 
 

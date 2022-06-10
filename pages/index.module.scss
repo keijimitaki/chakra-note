@@ -1,6 +1,7 @@
 .page {
    display: flex;
    flex-direction: column;
+   overflow-x: hidden;
 }
 
 .search {
@@ -58,7 +59,7 @@
   }
   
   @media only screen and (max-width: 560px) { 
-    margin: 0 2rem;
+    margin: 0 2em;
   } 
 
 }
@@ -67,53 +68,35 @@
 
 
 .grid {
-  padding: 0 21rem;
+  padding: 0 21em;
   // margin: 0 4rem;
   display: grid;
-  grid-gap: 2rem;
+  grid-gap: 2em;
   grid-template-columns: repeat(auto-fit, minmax(580px, 1fr));
 
   @media only screen and (max-width: 1800px) { 
-    padding: 0 6rem;
+    padding: 0 6em;
   } 
   @media only screen and (max-width: 1400px) { 
-    padding: 0 3rem;
+    padding: 0 3em;
   } 
   @media only screen and (max-width: 1200px) { 
-    padding: 0.2rem;
+    padding: 0.2em;
     // margin: 0.25rem;
   } 
 
   @media only screen and (max-width: 560px) { 
-    padding: 0.1rem;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    padding: 0.1em;
     // margin: 0.1rem;
   } 
 
 }
 
-// .grid.aboveMin {
-//   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-// }
 
-// .flex-grid {
-//   display: flex;
-//   flex-wrap: wrap;
-// }
-
-// .flex-grid > * {
-//   flex: 1 1 60ch;
-// }
-
-
-// .grid {
-//   display: grid;
-//   grid-gap: 1rem;
-// }
-
-// @supports (width: min(250px, 100%)) {
-//   .grid {
-//     grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
-//   }
-// }
-
-
+.spinner {
+  z-index:500;
+  position: fixed;
+	top: 45%;
+	left: 50%;
+}

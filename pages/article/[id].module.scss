@@ -21,3 +21,10 @@
     outline: none;
   }
 }
+
+.spinner {
+  z-index:500;
+  position: fixed;
+	top: 55%;
+	left: 50%;
+}

@@ -2,7 +2,7 @@ import { createContext, useState, useEffect } from 'react';
 
 import {
   auth,
-  onAuthStateChangedListener,
+  // onAuthStateChangedListener,
 } from '../../utils/firebase';
 
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
@@ -69,7 +69,7 @@ export const UserProvider = ({children}: Props) => {
 
   //変更検知リスナーの登録
   useEffect(() => {  
-      const unsubscribe = onAuthStateChangedListener( (authUser: { uid: string; email: string; }) => {
+      const unsubscribe = onAuthStateChanged( auth, (authUser) => {
         if (authUser) {
           console.log('変更検知');
         //   let user = new User(authUser.uid, authUser.email, null);

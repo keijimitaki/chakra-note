@@ -1,10 +1,12 @@
-import React, { useRef, useState, useContext, useEffect } from 'react';
+import React, { useRef, useState, useContext, useEffect, useCallback } from 'react';
 
 import styles from './[id].module.scss';
 
 import { collection, getDoc, getDocs, getFirestore, 
   doc, setDoc, addDoc, updateDoc, deleteDoc, query, where, orderBy,
-  serverTimestamp } from 'firebase/firestore'
+  serverTimestamp, 
+  startAfter,
+  limit} from 'firebase/firestore'
 
 import '../../utils/firebase' // Initialize FirebaseApp
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject  } from "firebase/storage";
@@ -15,7 +17,7 @@ import { useRouter } from 'next/router';
 
 import ReactTagInput from "@pathofdev/react-tag-input";
 import "@pathofdev/react-tag-input/build/index.css";
-import { Image, Grid, GridItem, Input, Center, Stack, Textarea, Text, Button, RadioGroup, Radio, useDisclosure, AlertDialog, AlertDialogOverlay, AlertDialogContent, AlertDialogHeader, AlertDialogCloseButton, AlertDialogBody, AlertDialogFooter, AspectRatio, Box, Badge } from '@chakra-ui/react';
+import { Image, Grid, GridItem, Input, Center, Stack, Textarea, Text, Button, RadioGroup, Radio, useDisclosure, AlertDialog, AlertDialogOverlay, AlertDialogContent, AlertDialogHeader, AlertDialogCloseButton, AlertDialogBody, AlertDialogFooter, AspectRatio, Box, Badge, Spinner } from '@chakra-ui/react';
 
 import { UserContext } from '../../store/contexts/user.context';
 
@@ -25,10 +27,16 @@ import Fav from '../../components/Fav';
 import { FavIconBorder,FavIconFavorite } from "../../components/custom-icon/FavIcon";
 import User from '../../models/User'
 
+import ScrollObserver from "../../components/ScrollObserver";
 
 
 export default function EditForm() {
-  
+
+  //ローディング状態
+  const [finishLoading, setFinishLoading] = useState(true);
+  const [isActiveObserver, setIsActiveObserver] = useState(true)
+  const [lastDoc, setLastDoc] = useState();
+
   const { currentUser, setCurrentUser } = useContext(UserContext);
   const router = useRouter();
 
@@ -61,6 +69,89 @@ export default function EditForm() {
   //記事作成者
   const [authorUid, setAuthorUid] = useState(null); 
 
+
+  const fetchNextArticles = useCallback(async () => {
+    setFinishLoading(false);
+    search();
+    
+  }, [comments]);
+
+  const search = async() => {
+
+    const articleId = router.asPath.substring(router.asPath.lastIndexOf('/') + 1); 
+    const db = getFirestore();
+
+    // alert('search');
+
+       //コメントを取得
+    if(articleId){
+      
+      let commentsQuery = null;
+      if(lastDoc) {
+       commentsQuery = query(collection(db, "comments")
+         ,where("article_id", "==", articleId)
+         ,orderBy("created_at","desc")
+         ,startAfter(lastDoc)
+         ,limit(6));
+   
+
+     } else {
+       commentsQuery = query(collection(db, "comments")
+         ,where("article_id", "==", articleId)
+         ,orderBy("created_at","desc")
+         ,limit(6));
+
+     }
+
+     console.log("commentsQuery:", commentsQuery);
+     const commentsSnapshot = await getDocs(commentsQuery);
+    if(commentsSnapshot.docs.length <= 0){
+      //@ts-ignore
+      setLastDoc(null);
+      setFinishLoading(true);
+
+      return; 
+    }
+
+    const lastVisible = commentsSnapshot.docs[commentsSnapshot.docs.length-1];
+    console.log("lastVisible", lastVisible);
+    //@ts-ignore
+    setLastDoc(lastVisible);
+
+      // @ts-ignore
+      let rows = [] ; 
+      commentsSnapshot.forEach((doc) => {
+        console.log(doc.id, " => ", doc.data());
+        
+        const date = doc.data().created_at;
+        const format = (date: Date) => {
+          const year = date.getFullYear();
+          const month = ('00' + (date.getMonth() + 1)).slice(-2);
+          const day = ('00' + date.getDate()).slice(-2);
+          const hours = ('00' + date.getHours()).slice(-2);
+          const minutes = ('00' + date.getMinutes()).slice(-2);
+          return `${year}/${month}/${day} ${hours}:${minutes}`;
+        };
+        const formatedDate = format(date.toDate());
+        console.log(formatedDate);
+        console.log(doc.id);
+
+        rows.push({
+          docId: doc.id,
+          commentedUid: doc.data().commented_uid,
+          articleId: doc.data().article_id,
+          comment: doc.data().comment,
+          createdAt: formatedDate,
+        });
+      });
+      //@ts-ignore
+      setComments([...comments, ...rows]);
+
+
+    }
+    setFinishLoading(true);
+    
+  };
 
   //初期値取得
   useEffect(() =>{
@@ -111,38 +202,38 @@ export default function EditForm() {
         setPremium(data.premium_flag);
 
         //コメントを取得
-        const commentsQuery = query(collection(db, "comments"), where("article_id", "==", articleId) , orderBy("created_at","desc"));
-        console.log("commentsQuery:", commentsQuery);
-        const commentsSnapshot = await getDocs(commentsQuery);
-        // @ts-ignore
-        let comments = [] ; 
-        commentsSnapshot.forEach((doc) => {
-          console.log(doc.id, " => ", doc.data());
+        // const commentsQuery = query(collection(db, "comments"), where("article_id", "==", articleId) , orderBy("created_at","desc"));
+        // console.log("commentsQuery:", commentsQuery);
+        // const commentsSnapshot = await getDocs(commentsQuery);
+        // // @ts-ignore
+        // let comments = [] ; 
+        // commentsSnapshot.forEach((doc) => {
+        //   console.log(doc.id, " => ", doc.data());
           
-          const date = doc.data().created_at;
-          const format = (date: Date) => {
-            const year = date.getFullYear();
-            const month = ('00' + (date.getMonth() + 1)).slice(-2);
-            const day = ('00' + date.getDate()).slice(-2);
-            const hours = ('00' + date.getHours()).slice(-2);
-            const minutes = ('00' + date.getMinutes()).slice(-2);
-            return `${year}/${month}/${day} ${hours}:${minutes}`;
-          };
-          const formatedDate = format(date.toDate());
-          console.log(formatedDate);
-          console.log(doc.id);
+        //   const date = doc.data().created_at;
+        //   const format = (date: Date) => {
+        //     const year = date.getFullYear();
+        //     const month = ('00' + (date.getMonth() + 1)).slice(-2);
+        //     const day = ('00' + date.getDate()).slice(-2);
+        //     const hours = ('00' + date.getHours()).slice(-2);
+        //     const minutes = ('00' + date.getMinutes()).slice(-2);
+        //     return `${year}/${month}/${day} ${hours}:${minutes}`;
+        //   };
+        //   const formatedDate = format(date.toDate());
+        //   console.log(formatedDate);
+        //   console.log(doc.id);
 
-          comments.push({
-            docId: doc.id,
-            commentedUid: doc.data().commented_uid,
-            articleId: doc.data().article_id,
-            comment: doc.data().comment,
-            createdAt: formatedDate,
-          });
-        });
-        //@ts-ignore
-        setComments(comments);
-        
+        //   comments.push({
+        //     docId: doc.id,
+        //     commentedUid: doc.data().commented_uid,
+        //     articleId: doc.data().article_id,
+        //     comment: doc.data().comment,
+        //     createdAt: formatedDate,
+        //   });
+        // });
+        // //@ts-ignore
+        // setComments(comments);
+        search();
 
       } else {
         // doc.data() will be undefined in this case
@@ -182,39 +273,76 @@ export default function EditForm() {
     
     
     //コメントを取得
-    const commentsQuery = query(collection(db, "comments"), where("article_id", "==", articleId), orderBy("created_at","desc"));
-    console.log("commentsQuery:", commentsQuery);
-    const commentsSnapshot = await getDocs(commentsQuery);
-    // @ts-ignore
-    let commentsList = [] ; 
-    commentsSnapshot.forEach((doc) => {
-      // doc.data() is never undefined for query doc snapshots
-      console.log(doc.id, " => ", doc.data());
+    let commentsQuery = null;
+    
+    // if(articleId){
+
+    // }
+    //   if(lastDoc) {
+    //     commentsQuery = query(collection(db, "comments")
+    //       ,where("article_id", "==", articleId)
+    //       ,orderBy("created_at","desc")
+    //       ,startAfter(lastDoc)
+    //       ,limit(1));
+    
+
+    //   } else {
+
+    //     commentsQuery = query(collection(db, "comments")
+    //       ,where("article_id", "==", articleId)
+    //       ,orderBy("created_at","desc")
+    //       ,limit(1));
+
+    //   }
+
+    // console.log("commentsQuery:", commentsQuery);
+    // const commentsSnapshot = await getDocs(commentsQuery);
+
+    // if(commentsSnapshot.docs.length <= 0){
+    //   //@ts-ignore
+    //   setLastDoc(null);
+    //   setFinishLoading(true);
+
+    //   return; 
+    // }
+
+    // const lastVisible = commentsSnapshot.docs[commentsSnapshot.docs.length-1];
+    // console.log("lastVisible", lastVisible);
+    // //@ts-ignore
+    // setLastDoc(lastVisible);
+
+
+    // // @ts-ignore
+    // let commentsList = [] ; 
+    // commentsSnapshot.forEach((doc) => {
+    //   // doc.data() is never undefined for query doc snapshots
+    //   console.log(doc.id, " => ", doc.data());
       
-      const date = doc.data().created_at;
-      const format = (date: Date) => {
-        const year = date.getFullYear();
-        const month = ('00' + (date.getMonth() + 1)).slice(-2);
-        const day = ('00' + date.getDate()).slice(-2);
-        const hours = ('00' + date.getHours()).slice(-2);
-        const minutes = ('00' + date.getMinutes()).slice(-2);
-        return `${year}/${month}/${day} ${hours}:${minutes}`;
-      };
-      const formatedDate = format(date.toDate());
-      console.log(formatedDate);
-      console.log(doc.id);
+    //   const date = doc.data().created_at;
+    //   const format = (date: Date) => {
+    //     const year = date.getFullYear();
+    //     const month = ('00' + (date.getMonth() + 1)).slice(-2);
+    //     const day = ('00' + date.getDate()).slice(-2);
+    //     const hours = ('00' + date.getHours()).slice(-2);
+    //     const minutes = ('00' + date.getMinutes()).slice(-2);
+    //     return `${year}/${month}/${day} ${hours}:${minutes}`;
+    //   };
+    //   const formatedDate = format(date.toDate());
+    //   console.log(formatedDate);
+    //   console.log(doc.id);
 
-      commentsList.push({
-        docId: doc.id,
-        commentedUid: doc.data().commented_uid,
-        articleId: doc.data().article_id,
-        comment: doc.data().comment,
-        createdAt: formatedDate,
-      });
+    //   commentsList.push({
+    //     docId: doc.id,
+    //     commentedUid: doc.data().commented_uid,
+    //     articleId: doc.data().article_id,
+    //     comment: doc.data().comment,
+    //     createdAt: formatedDate,
+    //   });
 
-    });
-    //@ts-ignore
-    setComments(commentsList);    
+    // });
+    // //@ts-ignore
+    // setComments(commentsList);    
+    search();
 
   }
 
@@ -236,41 +364,43 @@ export default function EditForm() {
     //   // Uh-oh, an error occurred!
     // });
 
-    //コメントを取得
-    const commentsQuery = query(collection(db, "comments"), where("article_id", "==", articleId), orderBy("created_at","desc"));
-    console.log("commentsQuery:", commentsQuery);
-    const commentsSnapshot = await getDocs(commentsQuery);
-    // @ts-ignore
-    let commentsList = [] ; 
-    commentsSnapshot.forEach((doc) => {
-      // doc.data() is never undefined for query doc snapshots
-      console.log(doc.id, " => ", doc.data());
+    // //コメントを取得
+    // const commentsQuery = query(collection(db, "comments"), where("article_id", "==", articleId), orderBy("created_at","desc"));
+    // console.log("commentsQuery:", commentsQuery);
+    // const commentsSnapshot = await getDocs(commentsQuery);
+    // // @ts-ignore
+    // let commentsList = [] ; 
+    // commentsSnapshot.forEach((doc) => {
+    //   // doc.data() is never undefined for query doc snapshots
+    //   console.log(doc.id, " => ", doc.data());
       
-      const date = doc.data().created_at;
-      const format = (date: Date) => {
-        const year = date.getFullYear();
-        const month = ('00' + (date.getMonth() + 1)).slice(-2);
-        const day = ('00' + date.getDate()).slice(-2);
-        const hours = ('00' + date.getHours()).slice(-2);
-        const minutes = ('00' + date.getMinutes()).slice(-2);
-        return `${year}/${month}/${day} ${hours}:${minutes}`;
-      };
-      const formatedDate = format(date.toDate());
-      console.log(formatedDate);
-      console.log(doc.id);
+    //   const date = doc.data().created_at;
+    //   const format = (date: Date) => {
+    //     const year = date.getFullYear();
+    //     const month = ('00' + (date.getMonth() + 1)).slice(-2);
+    //     const day = ('00' + date.getDate()).slice(-2);
+    //     const hours = ('00' + date.getHours()).slice(-2);
+    //     const minutes = ('00' + date.getMinutes()).slice(-2);
+    //     return `${year}/${month}/${day} ${hours}:${minutes}`;
+    //   };
+    //   const formatedDate = format(date.toDate());
+    //   console.log(formatedDate);
+    //   console.log(doc.id);
 
-      commentsList.push({
-        docId: doc.id,
-        commentedUid: doc.data().commented_uid,
-        articleId: doc.data().article_id,
-        comment: doc.data().comment,
-        createdAt: formatedDate,
-      });
+    //   commentsList.push({
+    //     docId: doc.id,
+    //     commentedUid: doc.data().commented_uid,
+    //     articleId: doc.data().article_id,
+    //     comment: doc.data().comment,
+    //     createdAt: formatedDate,
+    //   });
 
-    });
-    //@ts-ignore
-    setComments(commentsList);        
+    // });
+    // //@ts-ignore
+    // setComments(commentsList);        
         
+    search();
+
   } 
 
   //編集画面
@@ -358,6 +488,22 @@ export default function EditForm() {
 
               ))}
 
+              {!finishLoading && 
+                  <span className={styles['spinner']}>
+                  <Spinner
+                    thickness='4px'
+                    speed='0.65s'
+                    emptyColor='gray.200'
+                    color='blue.500'
+                    size='xl'
+                  />
+                  </span>
+                }      
+              <ScrollObserver
+                    onIntersect={fetchNextArticles}
+                    isActiveObserver={isActiveObserver}
+                  />
+
               </div>
 
 
@@ -366,8 +512,12 @@ export default function EditForm() {
 
         </GridItem>
       
+
+
       </Grid>
-    
+
+
+
     </>
 
 

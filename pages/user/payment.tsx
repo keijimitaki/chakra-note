@@ -5,11 +5,11 @@ import { useRouter } from 'next/router';
 
 import {
   auth,
-  signInAuthUserWithEmailAndPassword,
+  // signInAuthUserWithEmailAndPassword,
   signInWithFacebookPopup,
-  signInWithGooglePopup,
-  createUserDocumentFromAuth,
-  createAuthUserWithEmailAndPassword,
+  // signInWithGooglePopup,
+  // createUserDocumentFromAuth,
+  // createAuthUserWithEmailAndPassword,
 } from '../../utils/firebase';
 import { Box, Button, Text, Container, FormControl, FormLabel, Grid, Input, Stack, StackDivider, VStack } from '@chakra-ui/react';
 import { signInWithEmailAndPassword  } from 'firebase/auth';

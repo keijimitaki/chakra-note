@@ -25,9 +25,16 @@
     } 
   
     @media only screen and (max-width: 560px) { 
-      padding: 0.1rem;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      padding: 0.1em;
       // margin: 0.1rem;
     } 
   
   }
-  
+
+  .spinner {
+    z-index:500;
+    position: fixed;
+    top: 45%;
+    left: 50%;
+  }

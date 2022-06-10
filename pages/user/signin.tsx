@@ -1,6 +1,6 @@
 import { useState, useContext } from 'react';
 
-import styles from '.signin.module.scss';
+import styles from './signin.module.scss';
 import { useRouter } from 'next/router';
 
 // import Button from '../../components/crwn/button.component';
@@ -11,17 +11,15 @@ import { useRouter } from 'next/router';
 //https://fir-ui-demo-84a6c.firebaseapp.com/
 import {
   auth,
-  signInAuthUserWithEmailAndPassword,
+  //signInAuthUserWithEmailAndPassword,
   signInWithFacebookPopup,
-  signInWithGooglePopup,
-  createUserDocumentFromAuth,
-  createAuthUserWithEmailAndPassword,
+  // createUserDocumentFromAuth,
+  // createAuthUserWithEmailAndPassword,
 } from '../../utils/firebase';
-import { Box, Button, Text, Container, FormControl, FormLabel, Grid, Input, Stack, StackDivider, VStack } from '@chakra-ui/react';
+import { Box, Button, Text, Container, Spinner, FormControl, FormLabel, Grid, Input, Stack, StackDivider, VStack, Alert, AlertIcon } from '@chakra-ui/react';
 import { signInWithEmailAndPassword  } from 'firebase/auth';
 
 import { UserContext } from '../../store/contexts/user.context';
-
 
 
 const defaultFormFields = {
@@ -29,7 +27,12 @@ const defaultFormFields = {
   password: '',
 };
 
-const Singnin = () => {
+export default function Singnin() {
+
+  //ローディング状態
+  const [finishLoading, setFinishLoading] = useState(true);
+  //ログインエラー
+  const [hasError, setHasError] = useState(false);
 
   const [formFields, setFormFields] = useState(defaultFormFields);
   const { email, password } = formFields;
@@ -45,24 +48,26 @@ const Singnin = () => {
   const handleChange = (event) => {
     const { name, value } = event.target;
     console.log(event.target,name);
+
     setFormFields({ ...formFields, [name]: value });
   };
   
 
-  const signInWithDefault = async () => {
+  // const signInWithDefault = async () => {
+
     
-    console.log('ログイン前');
-    console.log('email=',email);
-    console.log('password=',password);
+  //   console.log('ログイン前');
+  //   console.log('email=',email);
+  //   console.log('password=',password);
 
-   // @ts-ignore keiji3
-    const ret = await signInAuthUserWithEmailAndPassword(email, password);
-   // @ts-ignore
-   console.log(ret);
+  //  // @ts-ignore 
+  //   const ret = await signInWithEmailAndPassword(auth, email, password);
+  //  // @ts-ignore
+  //  console.log(ret);
 
-    console.log('ログイン後')
+  //   console.log('ログイン後')
 
-  };
+  // };
 
   const signInWithFacebook = async () => {
     console.log('ログイン前')
@@ -72,55 +77,45 @@ const Singnin = () => {
     console.log('ログイン後')
 
   };
-  const signInWithGoogle = async () => {
-    const { user } = await signInWithGooglePopup();
-    await createUserDocumentFromAuth(user);
-  };
 
     // @ts-ignore
-    const handleSubmit = async (event) => {
-    event.preventDefault();
+  //   const handleSubmit = async (event) => {
+  //   event.preventDefault();
 
-    try {
-      const response = await signInAuthUserWithEmailAndPassword(
-        email,
-        password
-      );
-      console.log(response);
-      resetFormFields();
-    } catch (error) {
-    // @ts-ignore
-    switch (error.code) {
-        case 'auth/wrong-password':
-          alert('incorrect password for email');
-          break;
-        case 'auth/user-not-found':
-          alert('no user associated with this email');
-          break;
-        default:
-          console.log(error);
-      }
-    }
-  };
+  //   try {
+  //     const response = await signInWithEmailAndPassword(auth,email,password);
+  //     console.log(response);
+  //     resetFormFields();
+  //   } catch (error) {
+  //   // @ts-ignore
+  //   switch (error.code) {
+  //       case 'auth/wrong-password':
+  //         alert('incorrect password for email');
+  //         break;
+  //       case 'auth/user-not-found':
+  //         alert('no user associated with this email');
+  //         break;
+  //       default:
+  //         console.log(error);
+  //     }
+  //   }
+  // };
 
 
 
   //ログイン
   const submitHander = async (e:any)=> {
+
     e.preventDefault();
+
+    setFinishLoading(false);
+    setHasError(false);
 
     console.log('ログイン前');
     console.log('email=',email);
     console.log('password=',password);
 
-    // @ts-ignore keiji3
-    // const ret = await signInAuthUserWithEmailAndPassword(email, password);
-    // // @ts-ignore
-    // console.log(ret);
-
-    // @ts-ignore
-    // setCurrentUser(null);
-
+    console.log('finishLoading=',finishLoading);
     signInWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
       // Signed in
@@ -130,10 +125,15 @@ const Singnin = () => {
       // @ts-ignore
       setCurrentUser(user);
 
+      setFinishLoading(true);
       router.push('/'); 
 
     })
     .catch((error) => {
+
+      setFinishLoading(true);
+      setHasError(true);
+
       const errorCode = error.code;
       const errorMessage = error.message;
 
@@ -141,6 +141,7 @@ const Singnin = () => {
       console.log(errorCode,errorMessage);
 
     });    
+
   
   }
 
@@ -149,6 +150,18 @@ const Singnin = () => {
 
   return (
     <Container>
+
+      {!finishLoading && 
+          <span className={styles['spinner']}>
+          <Spinner
+            thickness='4px'
+            speed='0.65s'
+            emptyColor='gray.200'
+            color='blue.500'
+            size='xl'
+          />
+          </span>
+      }
 
       <form onSubmit={submitHander}>
         <VStack
@@ -181,7 +194,14 @@ const Singnin = () => {
           <Box h='90px'>
             <Button type="submit">ログイン</Button>
           </Box>
-        
+
+          {hasError &&
+            <Alert status='error'>
+              <AlertIcon />
+              ユーザーが存在しません
+            </Alert>          
+          } 
+
         </VStack>
       </form>
 
@@ -190,4 +210,4 @@ const Singnin = () => {
 };
 
 
-export default Singnin;
+//export default Singnin;

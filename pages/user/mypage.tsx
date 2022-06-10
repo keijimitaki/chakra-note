@@ -1,12 +1,15 @@
-import React, { useRef, useState, useContext, useEffect } from 'react';
+import React, { useRef, useState, useContext, useEffect, useCallback } from 'react';
 
 import '../../utils/firebase' // Initialize FirebaseApp
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject  } from "firebase/storage";
 
 import { collection, getDoc, getDocs, getFirestore, 
   doc, setDoc, addDoc, updateDoc, deleteDoc, query, where, orderBy,
-  serverTimestamp } from 'firebase/firestore'
+  serverTimestamp, 
+  startAfter,
+  limit} from 'firebase/firestore'
 
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 import styles from './mypage.module.scss';
 import User from '../../models/User'
@@ -23,13 +26,13 @@ import { TagModel } from '../../models/TagModel';
 //https://fir-ui-demo-84a6c.firebaseapp.com/
 import {
   auth,
-  signInAuthUserWithEmailAndPassword,
+  // signInAuthUserWithEmailAndPassword,
   signInWithFacebookPopup,
-  signInWithGooglePopup,
-  createUserDocumentFromAuth,
-  createAuthUserWithEmailAndPassword,
+  // signInWithGooglePopup,
+  // createUserDocumentFromAuth,
+  // createAuthUserWithEmailAndPassword,
 } from '../../utils/firebase';
-import { Box, Button, Text, useToast, Container, FormControl, FormLabel, Grid, Input, Stack, StackDivider, VStack, RadioGroup, Radio, Center } from '@chakra-ui/react';
+import { Box, Button, Text, useToast, Container, FormControl, FormLabel, Grid, Input, Stack, StackDivider, VStack, RadioGroup, Radio, Center, Spinner } from '@chakra-ui/react';
 import { onAuthStateChanged, updatePassword } from 'firebase/auth';
 
 import { UserContext } from '../../store/contexts/user.context';
@@ -38,6 +41,7 @@ import ImageUpLoad from '../../components/ImageUpLoad';
 
 import { useRouter } from 'next/router';
 import { ssrEntries } from 'next/dist/build/webpack/plugins/middleware-plugin';
+import ScrollObserver from '../../components/ScrollObserver';
 const defaultFormFields = {
   displayName: '',
   password: '',
@@ -59,6 +63,10 @@ const Mypage = () => {
   const [imageUrl ,setImageUrl] = useState(null);
   const [articles, setArticles] = useState<ArticleModel[]>([]);
 
+  //ローディング状態
+  const [finishLoading, setFinishLoading] = useState(true);
+  const [isActiveObserver, setIsActiveObserver] = useState(true)
+  const [lastDoc, setLastDoc] = useState();
 
   const resetFormFields = () => {
     setFormFields(defaultFormFields);
@@ -77,10 +85,7 @@ const Mypage = () => {
     event.preventDefault();
 
     try {
-      const response = await signInAuthUserWithEmailAndPassword(
-        emailVal,
-        password
-      );
+      const response = await signInWithEmailAndPassword(auth, emailVal,password);
       console.log(response);
       resetFormFields();
     } catch (error) {
@@ -114,6 +119,10 @@ const handlerPayment = () => {
   //ユーザー情報取得
   useEffect(() =>{
     
+    
+    //@ts-ignore
+    setLastDoc(null);
+
     console.log('useEffect=>');
 
       //現在ユーザーはこれを実施した後にしか取得できない
@@ -162,43 +171,45 @@ const handlerPayment = () => {
               //@ts-ignore
               storedUser.setCurrentUser(curretUser);
 
-            const storage = getStorage();
-            const articlesQuery = query(collection(db, "articles"),where('author_uid', '==' ,uid), orderBy('created_at', 'desc'));
-            const articlesSnapshot = await getDocs(articlesQuery);
+            // const storage = getStorage();
+            // const articlesQuery = query(collection(db, "articles"),where('author_uid', '==' ,uid), orderBy('created_at', 'desc'));
+            // const articlesSnapshot = await getDocs(articlesQuery);
             
-            console.log('articlesSnapshot=>',articlesSnapshot);
+            // console.log('articlesSnapshot=>',articlesSnapshot);
 
-            let rows = new Array();
-            for await(let doc of articlesSnapshot.docs) {
+            // let rows = new Array();
+            // for await(let doc of articlesSnapshot.docs) {
       
-                const tq = query(collection(db, "tags"), where("article_id", "==", doc.id) );
-                const tagSnapshot = await getDocs(tq);
+            //     const tq = query(collection(db, "tags"), where("article_id", "==", doc.id) );
+            //     const tagSnapshot = await getDocs(tq);
 
-                let tagNames:TagModel[] = []; 
-                tagSnapshot.forEach((tag) => {
-                  console.log(tag.id, " => ", tag.data());
-                  tagNames.push({
-                    id:tag.id,
-                    tagName: tag.data().tag_name});
-                });
+            //     let tagNames:TagModel[] = []; 
+            //     tagSnapshot.forEach((tag) => {
+            //       console.log(tag.id, " => ", tag.data());
+            //       tagNames.push({
+            //         id:tag.id,
+            //         tagName: tag.data().tag_name});
+            //     });
 
-                let row: ArticleModel = {
-                  id: doc.id,
-                  title: doc.data().title,
-                  content: doc.data().content,
-                  orgUrl: doc.data().url,
-                  favCount: doc.data().fav_count,
-                  author: doc.data().author_name, 
-                  premiumFlag: doc.data().premium_flag, 
-                  tags: tagNames
-                }
+            //     let row: ArticleModel = {
+            //       id: doc.id,
+            //       title: doc.data().title,
+            //       content: doc.data().content,
+            //       orgUrl: doc.data().url,
+            //       favCount: doc.data().fav_count,
+            //       author: doc.data().author_name, 
+            //       premiumFlag: doc.data().premium_flag, 
+            //       tags: tagNames
+            //     }
       
-                rows.push(row);
+            //     rows.push(row);
             
-            };
+            // };
             
-            setArticles(rows);
-          
+            // setArticles(rows);
+            
+            search(uid);
+
           };
           
           f();
@@ -358,6 +369,120 @@ const handlerPayment = () => {
   }
 
 
+  const fetchNextArticles = useCallback(async () => {
+    setFinishLoading(false);
+    // onAuthStateChanged(auth, (authUser) => {
+
+    //   if (authUser) {
+    //     search(authUser.uid);
+    //   }
+
+    // })
+
+    //@ts-ignore
+    search(myUid);
+    
+  }, [articles]);
+
+  //初回データ取得
+  useEffect(() => {
+    //ログインユーザーを取得
+    //現在ユーザーはこれを実施した後にしか取得できない
+    onAuthStateChanged(auth, (authUser) => {
+
+      if (authUser) {
+        const uid = authUser.uid;
+        //@ts-ignore
+        setMyUid(uid);
+      }
+      //@ts-ignore
+      //setLastDoc(null);
+
+      console.log('search authUser.uid',myUid);
+      // search();
+
+    }); 
+   
+
+  },[]);
+
+
+  const search = async(uid:string) => {
+
+    const db = getFirestore();
+    const storage = getStorage();
+  
+console.log('myUid=>',myUid);
+
+    let articlesQuery = null;
+    if(lastDoc) {
+
+      articlesQuery = query(collection(db, "articles")
+        ,where('author_uid', '==' ,uid)
+        , orderBy('created_at', 'desc')
+        ,startAfter(lastDoc)
+        ,limit(2));
+
+    
+    } else {
+      articlesQuery = query(collection(db, "articles")
+        ,where('author_uid', '==' ,uid)
+        , orderBy('created_at', 'desc')
+        ,limit(2));
+
+    }
+
+  const articlesSnapshot = await getDocs(articlesQuery);
+  console.log('articlesSnapshot=>',articlesSnapshot);
+  if(articlesSnapshot.docs.length <= 0){
+    //@ts-ignore
+    setLastDoc(null);
+    setFinishLoading(true);
+
+    return; 
+  }
+  const lastVisible = articlesSnapshot.docs[articlesSnapshot.docs.length-1];
+  console.log("lastVisible", lastVisible);
+  //@ts-ignore
+  setLastDoc(lastVisible);
+
+
+  let rows = new Array();
+  for await(let doc of articlesSnapshot.docs) {
+
+      const tq = query(collection(db, "tags"), where("article_id", "==", doc.id) );
+      const tagSnapshot = await getDocs(tq);
+
+      let tagNames:TagModel[] = []; 
+      tagSnapshot.forEach((tag) => {
+        console.log(tag.id, " => ", tag.data());
+        tagNames.push({
+          id:tag.id,
+          tagName: tag.data().tag_name});
+      });
+
+      let row: ArticleModel = {
+        id: doc.id,
+        title: doc.data().title,
+        content: doc.data().content,
+        orgUrl: doc.data().url,
+        favCount: doc.data().fav_count,
+        author: doc.data().author_name, 
+        premiumFlag: doc.data().premium_flag, 
+        tags: tagNames
+      }
+
+      rows.push(row);
+  
+  };
+  
+  setArticles([...articles, ...rows]);
+  setFinishLoading(true);
+  
+
+};
+
+
 
 
   return (
@@ -411,6 +536,18 @@ const handlerPayment = () => {
         </Center>
       </form>
 
+      {!finishLoading && 
+          <span className={styles['spinner']}>
+          <Spinner
+            thickness='4px'
+            speed='0.65s'
+            emptyColor='gray.200'
+            color='blue.500'
+            size='xl'
+          />
+          </span>
+        }
+        
       <div className={styles['grid']}>
 
         {(articles.length>0) && articles.map((row: any) => (
@@ -432,6 +569,10 @@ const handlerPayment = () => {
 
       </div>
 
+      <ScrollObserver
+            onIntersect={fetchNextArticles}
+            isActiveObserver={isActiveObserver}
+          />
     </>
 
   );

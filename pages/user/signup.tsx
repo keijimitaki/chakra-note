@@ -1,6 +1,6 @@
 import { useState, useContext } from 'react';
 
-import styles from '.signin.module.scss';
+import styles from './signup.module.scss';
 import { Router, useRouter } from 'next/router';
 
 // import Button from '../../components/crwn/button.component';
@@ -11,14 +11,20 @@ import { Router, useRouter } from 'next/router';
 //https://fir-ui-demo-84a6c.firebaseapp.com/
 import {
   auth,
-  signInAuthUserWithEmailAndPassword,
+  db,
+  //signInAuthUserWithEmailAndPassword,
   signInWithFacebookPopup,
-  signInWithGooglePopup,
-  createUserDocumentFromAuth,
-  createAuthUserWithEmailAndPassword,
+  // createUserDocumentFromAuth,
+  // createAuthUserWithEmailAndPassword,
 } from '../../utils/firebase';
-import { Box, Button, Text, Container, FormControl, FormLabel, Grid, Input, Stack, StackDivider, VStack } from '@chakra-ui/react';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+
+import { collection, getDoc, getFirestore, doc, setDoc, query, where, orderBy, limit, startAfter } from 'firebase/firestore'
+
+
+import { Box, Button, Text, Container, FormControl, FormLabel, Grid, Input, Stack, StackDivider, VStack, Spinner, Alert, AlertIcon } from '@chakra-ui/react';
+import { 
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword } from 'firebase/auth';
 
 import { UserContext } from '../../store/contexts/user.context';
 
@@ -29,8 +35,13 @@ const defaultFormFields = {
   note: '',
 };
 
-const Singnup = () => {
+export default function Singnup() {
 
+  //ローディング状態
+  const [finishLoading, setFinishLoading] = useState(true);
+  //ログインエラー
+  const [hasError, setHasError] = useState(false);
+    
   const [formFields, setFormFields] = useState(defaultFormFields);
   const { email, password, note } = formFields;
 
@@ -48,34 +59,27 @@ const Singnup = () => {
   };
   
 
-  const signInWithDefault = async () => {
+  // const signInWithDefault = async () => {
     
-    console.log('ログイン前');
-    console.log('email=',email);
-    console.log('password=',password);
+  //   console.log('ログイン前');
+  //   console.log('email=',email);
+  //   console.log('password=',password);
 
-   // @ts-ignore keiji3
-    const ret = await signInAuthUserWithEmailAndPassword(email, password);
-   // @ts-ignore
-   console.log(ret);
+  //   const ret = await signInWithEmailAndPassword(auth, email, password);
+  //  console.log(ret);
 
-    console.log('ログイン後')
+  //   console.log('ログイン後')
 
-  };
+  // };
 
-  const signInWithFacebook = async () => {
-    console.log('ログイン前')
-    const { user } = await signInWithFacebookPopup();
-    console.log(user);
+  // const signInWithFacebook = async () => {
+  //   console.log('ログイン前')
+  //   const { user } = await signInWithFacebookPopup();
+  //   console.log(user);
 
-    console.log('ログイン後')
+  //   console.log('ログイン後')
 
-  };
-  const signInWithGoogle = async () => {
-    const { user } = await signInWithGooglePopup();
-    await createUserDocumentFromAuth(user);
-  };
-
+  // };
 
 
 
@@ -83,27 +87,57 @@ const Singnup = () => {
   const submitHander = async (e:any)=> {
     e.preventDefault();
 
+    setFinishLoading(false);
+    setHasError(false);
+
     if( email == null || password == null){
       alert('入力してください');
       return;
     }
 
-    // try{
-    //   const response = await createAuthUserWithEmailAndPassword(email,password);
-    //   console.log('submit');
-    //   console.log(response);
-    // } catch(error) {
-    //   console.log('error occured',error);
-    // }
     console.log('email:',defaultFormFields);
     // @ts-ignore
     const { user } = createUserWithEmailAndPassword(auth, email, password)
-    .then((userCredential) => {
+    .then(async (userCredential) => {
       // Signed in
       const user = userCredential.user;
-      // ...
       console.log(user);
-      createUserDocumentFromAuth( user, { note } );
+
+      const userDocRef = doc(db, 'users', user.uid);
+
+      const userSnapshot = await getDoc(userDocRef);
+    
+      if (!userSnapshot.exists()) {
+        const { displayName, email } = user;
+        const createdAt = new Date();
+    
+        try {
+          await setDoc(userDocRef, {
+            uid: user.uid,
+            email: email,
+            display_name: displayName,
+            prof_image_url: null,
+            premium_user_flag: null,
+            premium_join_at: null,
+            premium_leave_at: null,
+            created_at: createdAt,
+            updated_at: null,
+            ...{note},
+          });
+    
+        } catch (error) {
+          setHasError(true);
+          setFinishLoading(true);
+          
+        }
+
+        setFinishLoading(true);
+    
+      }
+    
+
+      
+
       resetFormFields();
       // @ts-ignore
       setCurrentUser(user);
@@ -122,6 +156,18 @@ const Singnup = () => {
 
   return (
     <Container>
+      
+      {!finishLoading && 
+          <span className={styles['spinner']}>
+          <Spinner
+            thickness='4px'
+            speed='0.65s'
+            emptyColor='gray.200'
+            color='blue.500'
+            size='xl'
+          />
+          </span>
+      }
 
       <form onSubmit={submitHander}>
         <VStack
@@ -154,12 +200,17 @@ const Singnup = () => {
             <Button type="submit">新規登録</Button>
           </Box>
         
-        </VStack>
+          {hasError &&
+            <Alert status='error'>
+              <AlertIcon />
+              ユーザーが存在しません
+            </Alert>          
+          }
+          
+          
+          </VStack>
       </form>
 
     </Container>
   );
 };
-
-
-export default Singnup;

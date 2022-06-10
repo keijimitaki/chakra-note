@@ -49,7 +49,8 @@ const Article = (props: Props) => {
           </Flex>
 
           <Flex mb={2} paddingLeft={2} align="center">
-            <Box minW="660px;">
+            {/* <Box minW="660px" > */}
+            <Box className={styles['image-box']} >
               {(props.tags) && (props.tags.length>0) && props.tags.map((row: any) => (
                 <Badge key={row.id} ml='3'>{row.tagName}</Badge>
               ))}

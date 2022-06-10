@@ -73,16 +73,11 @@ const Header = () => {
         </Box>
         <Spacer />
         <Box p='4' bg='white.400'>
-          {/* <Button onClick={handleClick2}>
-            ログイン
-          </Button> */}
-
 
         <Stack direction='row'>
           { (storedUser.currentUser != null) && (
               <>
 
-              {/* //'https://bit.ly/broken-link' */}
               <Avatar className={styles['avatar']} name='Oshigaki Kisame' 
                 src={ storedUser.currentUser['profImageUrl'] } onClick={handleAvatar} />
               <Box p="3" id="loginUserName" className={styles['username']} >
